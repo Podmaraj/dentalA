@@ -1,10 +1,11 @@
 [project]
 name = "dentala"
-version = "0.1.0"
-description = "Add your description here"
+version = "1.0.0"
+description = "AI-powered dental appointment management system with multi-agent architecture"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
+    "fastapi>=0.115.0",
     "langchain>=0.3.0",
     "langchain-core>=0.3.0",
     "langchain-groq>=1.1.2",
@@ -12,4 +13,5 @@ dependencies = [
     "pandas>=2.0.0",
     "pydantic>=2.0.0",
     "python-dotenv>=1.0.0",
+    "uvicorn>=0.34.0",
 ]
