@@ -4,7 +4,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import pandas as pd
-import os
+
 
 from dental_agent.agent import run_agent
 from dental_agent.config.settings import CSV_PATH
