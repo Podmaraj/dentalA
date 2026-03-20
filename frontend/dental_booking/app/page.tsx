@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import Link from "next/link";
 
 /* ── DATA ─────────────────────────────────────────────────── */
 const services = [
@@ -13,9 +14,9 @@ const services = [
 ];
 
 const doctors = [
-  { name: "Dr. Priya Sharma", spec: "Orthodontist",     exp: "12 yrs", initials: "PS", slots: ["9:00","11:00","14:00"]  },
-  { name: "Dr. Arjun Mehta",  spec: "Endodontist",      exp: "9 yrs",  initials: "AM", slots: ["10:00","13:00","16:00"] },
-  { name: "Dr. Neha Gupta",   spec: "Cosmetic Dentist", exp: "7 yrs",  initials: "NG", slots: ["9:30","12:00","15:30"]  },
+  { name: "Dr. Priya Sharma", spec: "Orthodontist",     exp: "12 yrs", initials: "PS" },
+  { name: "Dr. Arjun Mehta",  spec: "Endodontist",      exp: "9 yrs",  initials: "AM" },
+  { name: "Dr. Neha Gupta",   spec: "Cosmetic Dentist", exp: "7 yrs",  initials: "NG" },
 ];
 
 const steps = [
@@ -25,15 +26,9 @@ const steps = [
   { num: "04", label: "Confirm booking",   desc: "AI confirmation sent to your inbox instantly" },
 ];
 
-const FIELDS: [string, string, string][] = [
-  ["Full Name",     "text",  "Rajesh Kumar"    ],
-  ["Phone Number",  "tel",   "+91 98765 43210" ],
-  ["Email Address", "email", "rajesh@email.com"],
-  ["Date of Birth", "date",  ""                ],
-];
-
 const FOOTER_COLS: [string, string[]][] = [
   ["Services", ["General Checkup","Orthodontics","Cosmetic","Implants","Root Canal"]],
+  ["Quick Links", ["Dashboard", "Booking", "Doctors", "AI Chat"]],
   ["Contact",  ["GS Road, Guwahati","+91 361 000 0000","hello@dentala.in","Mon–Sat  9am–7pm"]],
 ];
 
@@ -43,12 +38,9 @@ const TICKER = Array(10)
 
 /* ── COMPONENT ────────────────────────────────────────────── */
 export default function HomePage() {
-  const [activeService,  setActiveService]  = useState<number | null>(null);
-  const [selectedDoctor, setSelectedDoctor] = useState<number | null>(null);
-  const [selectedSlot,   setSelectedSlot]   = useState<string | null>(null);
-  const [scrollY,        setScrollY]        = useState(0);
-  const [booked,         setBooked]         = useState(false);
-  const [mobileOpen,     setMobileOpen]     = useState(false);
+  const [scrollY,    setScrollY]    = useState(0);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [chatPulse,  setChatPulse]  = useState(true);
   const heroRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -57,12 +49,11 @@ export default function HomePage() {
     return () => window.removeEventListener("scroll", fn);
   }, []);
 
-  const handleBook = () => {
-    if (activeService !== null && selectedDoctor !== null && selectedSlot) {
-      setBooked(true);
-      setTimeout(() => setBooked(false), 3200);
-    }
-  };
+  // Stop chat pulse after 8s
+  useEffect(() => {
+    const t = setTimeout(() => setChatPulse(false), 8000);
+    return () => clearTimeout(t);
+  }, []);
 
   const goto = (id: string) => {
     setMobileOpen(false);
@@ -73,11 +64,6 @@ export default function HomePage() {
 
   return (
     <>
-      {/* ── TOAST ─────────────────────────────────────────── */}
-      <div className={`toast${booked ? " show" : ""}`}>
-        ✓ Appointment confirmed — check your email
-      </div>
-
       {/* ── NAV ───────────────────────────────────────────── */}
       <nav className={`nav${navSolid ? " solid" : ""}`}>
         <a href="#home" className="nav-logo">
@@ -86,16 +72,21 @@ export default function HomePage() {
         </a>
 
         <div className="nav-links">
-          {[["Services","services"],["Doctors","doctors"],["Book","book"],["About","about"]].map(([l,id]) => (
+          {[["Services","services"],["Doctors","doctors"],["How It Works","steps"],["About","about"]].map(([l,id]) => (
             <a key={id} href={`#${id}`} className="nav-link">{l}</a>
           ))}
+          <Link href="/dashboard" className="nav-link" style={{ color: "var(--teal-600)", fontWeight: 600 }}>
+            Dashboard →
+          </Link>
         </div>
 
-        <div style={{ display:"flex", alignItems:"center", gap:"12px" }}>
-          {/* Desktop only CTA — hidden on mobile via globals.css */}
-          <button className="btn btn-outline btn-sm nav-desktop-cta" onClick={() => goto("book")}>
-            Emergency Care
-          </button>
+        <div style={{ display:"flex", alignItems:"center", gap:"10px" }}>
+          <Link href="/chat" className="btn btn-outline btn-sm nav-desktop-cta" style={{ gap:"6px" }}>
+            💬 AI Chat
+          </Link>
+          <Link href="/booking" className="btn btn-primary btn-sm nav-desktop-cta">
+            Book Now
+          </Link>
           <button className="nav-hamburger" aria-label="Toggle menu"
             onClick={() => setMobileOpen(o => !o)}>
             <span /><span /><span />
@@ -105,13 +96,18 @@ export default function HomePage() {
 
       {/* Mobile drawer */}
       <div className={`nav-mobile${mobileOpen ? " open" : ""}`}>
-        {[["Services","services"],["Doctors","doctors"],["Book","book"],["About","about"]].map(([l,id]) => (
+        {[["Services","services"],["Doctors","doctors"],["How It Works","steps"],["About","about"]].map(([l,id]) => (
           <a key={id} href={`#${id}`} className="nav-link" onClick={() => goto(id)}>{l}</a>
         ))}
-        <button className="btn btn-primary btn-sm" style={{ marginTop:"8px" }}
-          onClick={() => goto("book")}>
+        <Link href="/dashboard" className="nav-link" onClick={() => setMobileOpen(false)} style={{ color: "var(--teal-600)", fontWeight: 600 }}>
+          Dashboard
+        </Link>
+        <Link href="/chat" className="nav-link" onClick={() => setMobileOpen(false)}>
+          💬 AI Chat
+        </Link>
+        <Link href="/booking" className="btn btn-primary btn-sm" style={{ marginTop:"8px" }} onClick={() => setMobileOpen(false)}>
           Book Appointment
-        </button>
+        </Link>
       </div>
 
       {/* ── HERO ──────────────────────────────────────────── */}
@@ -128,38 +124,20 @@ export default function HomePage() {
           background: "linear-gradient(160deg,#ffffff 0%,#edf8f7 60%,#d0eeec 100%)",
         }}
       >
-        {/* Dot grid texture */}
+        {/* Dot grid */}
         <div style={{
-          position:        "absolute", inset:0, pointerEvents:"none",
+          position:"absolute", inset:0, pointerEvents:"none",
           backgroundImage: "linear-gradient(rgba(30,142,136,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(30,142,136,.06) 1px,transparent 1px)",
           backgroundSize:  "72px 72px",
         }} />
 
-        {/* Floating orb — uses .float-y from globals */}
+        {/* Floating orb */}
         <div className="float-y" style={{
-          position:      "absolute", right:"5%", top:"15%",
-          width:         "420px",    height:"420px", borderRadius:"50%",
-          background:    "radial-gradient(circle,rgba(30,142,136,.12) 0%,transparent 70%)",
-          pointerEvents: "none",
+          position:"absolute", right:"5%", top:"15%",
+          width:"420px", height:"420px", borderRadius:"50%",
+          background:"radial-gradient(circle,rgba(30,142,136,.12) 0%,transparent 70%)",
+          pointerEvents:"none",
         }} />
-
-        {/* Spinning ring with 4 dots — uses .spin-ring from globals */}
-        <div className="spin-ring" style={{
-          position:      "absolute", right:"7%", top:"17%",
-          width:         "320px",    height:"320px",
-        }}>
-          {[0,90,180,270].map(deg => (
-            <div key={deg} style={{
-              position:        "absolute",
-              width:           "8px", height:"8px", borderRadius:"50%",
-              background:      "var(--teal-400)",
-              top:"50%",       left:"50%",
-              transformOrigin: "0 0",
-              transform:       `rotate(${deg}deg) translateX(158px) translateY(-4px)`,
-              opacity:         .7,
-            }} />
-          ))}
-        </div>
 
         {/* Hero content */}
         <div style={{ maxWidth:"680px", position:"relative", zIndex:1 }}>
@@ -168,13 +146,11 @@ export default function HomePage() {
           </span>
 
           <h1 className="fu-2" style={{
-            fontFamily:    "var(--font-head)",
-            fontSize:      "clamp(44px,7vw,84px)",
-            fontWeight:    700,
-            lineHeight:    1.08,
-            letterSpacing: "-.025em",
-            color:         "var(--fg)",
-            marginBottom:  "28px",
+            fontFamily:"var(--font-head)",
+            fontSize:"clamp(44px,7vw,84px)",
+            fontWeight:700, lineHeight:1.08,
+            letterSpacing:"-.025em",
+            color:"var(--fg)", marginBottom:"28px",
           }}>
             Your smile,{" "}
             <span className="h-display" style={{ fontSize:"clamp(48px,7.5vw,90px)" }}>
@@ -183,20 +159,20 @@ export default function HomePage() {
           </h1>
 
           <p className="fu-3" style={{
-            fontFamily:   "var(--font-body)",
-            fontSize:     "17px",
-            lineHeight:   1.75,
-            color:        "var(--fg-muted)",
-            maxWidth:     "460px",
-            marginBottom: "40px",
+            fontFamily:"var(--font-body)", fontSize:"17px",
+            lineHeight:1.75, color:"var(--fg-muted)",
+            maxWidth:"460px", marginBottom:"40px",
           }}>
             AI-powered appointment booking meets world-class dental care.
             Reserve your visit in under 60 seconds.
           </p>
 
-          <div className="fu-4" style={{ display:"flex", gap:"16px", flexWrap:"wrap", marginBottom:"56px" }}>
-            <button className="btn btn-primary btn-lg" onClick={() => goto("book")}>Book Appointment</button>
-            <button className="btn btn-outline btn-lg" onClick={() => goto("services")}>View Services</button>
+          <div className="fu-4" style={{ display:"flex", gap:"12px", flexWrap:"wrap", marginBottom:"56px" }}>
+            <Link href="/booking" className="btn btn-primary btn-lg">Book Appointment</Link>
+            <Link href="/chat" className="btn btn-outline btn-lg" style={{ gap:"8px" }}>
+              💬 Talk to AI
+            </Link>
+            <button className="btn btn-ghost btn-lg" onClick={() => goto("services")}>View Services</button>
           </div>
 
           {/* Stats row */}
@@ -225,7 +201,7 @@ export default function HomePage() {
       </div>
 
       {/* ── HOW IT WORKS ──────────────────────────────────── */}
-      <section className="section section-alt section-divider">
+      <section id="steps" className="section section-alt section-divider">
         <span className="label-xs" style={{ display:"block", marginBottom:"14px" }}>Process</span>
         <h2 style={{ fontFamily:"var(--font-head)", fontSize:"clamp(28px,3.5vw,44px)", fontWeight:700, marginBottom:"48px", maxWidth:"360px", color:"var(--fg)" }}>
           Four steps to a healthier smile
@@ -253,8 +229,7 @@ export default function HomePage() {
         </div>
         <div className="grid-3">
           {services.map((s,i) => (
-            <div key={i} className={`service-card${activeService===i?" active":""}`}
-              onClick={() => setActiveService(i===activeService?null:i)}>
+            <div key={i} className="service-card">
               <div className="service-icon">{s.icon}</div>
               <h3 style={{ fontFamily:"var(--font-head)", fontSize:"18px", fontWeight:600, marginBottom:"8px", color:"var(--fg)" }}>{s.title}</h3>
               <p style={{ fontFamily:"var(--font-body)", fontSize:"13px", color:"var(--fg-muted)", lineHeight:1.65, marginBottom:"20px" }}>{s.desc}</p>
@@ -262,16 +237,13 @@ export default function HomePage() {
                 <span className="badge badge-muted">{s.duration}</span>
                 <span style={{ fontFamily:"var(--font-body)", fontSize:"14px", fontWeight:600, color:"var(--teal-600)" }}>From {s.price}</span>
               </div>
-              {activeService===i && (
-                <div style={{ marginTop:"18px", paddingTop:"18px", borderTop:"1px solid var(--border)" }}>
-                  <button className="btn btn-primary btn-full"
-                    onClick={e => { e.stopPropagation(); goto("book"); }}>
-                    Book This Service
-                  </button>
-                </div>
-              )}
             </div>
           ))}
+        </div>
+        <div style={{ textAlign:"center", marginTop:"40px" }}>
+          <Link href="/booking" className="btn btn-primary btn-lg">
+            Book a Service →
+          </Link>
         </div>
       </section>
 
@@ -283,8 +255,7 @@ export default function HomePage() {
         </h2>
         <div className="grid-3">
           {doctors.map((d,i) => (
-            <div key={i} className={`doctor-card${selectedDoctor===i?" selected":""}`}
-              onClick={() => { setSelectedDoctor(i===selectedDoctor?null:i); setSelectedSlot(null); }}>
+            <div key={i} className="doctor-card">
               <div style={{ display:"flex", alignItems:"center", gap:"14px", marginBottom:"18px" }}>
                 <div className="avatar">{d.initials}</div>
                 <div>
@@ -295,83 +266,35 @@ export default function HomePage() {
               <p style={{ fontFamily:"var(--font-body)", fontSize:"13px", color:"var(--fg-muted)" }}>
                 {d.exp} experience
               </p>
-              {selectedDoctor===i && (
-                <div style={{ marginTop:"18px", paddingTop:"18px", borderTop:"1px solid var(--border)" }}>
-                  <p style={{ fontFamily:"var(--font-body)", fontSize:"11px", fontWeight:600, letterSpacing:".1em", textTransform:"uppercase", color:"var(--fg-dim)", marginBottom:"12px" }}>
-                    Today&apos;s available slots
-                  </p>
-                  <div style={{ display:"flex", gap:"8px", flexWrap:"wrap" }}>
-                    {d.slots.map(slot => (
-                      <button key={slot} className={`slot-btn${selectedSlot===slot?" active":""}`}
-                        onClick={e => { e.stopPropagation(); setSelectedSlot(slot); }}>
-                        {slot}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
             </div>
           ))}
         </div>
+        <div style={{ textAlign:"center", marginTop:"40px" }}>
+          <Link href="/doctors" className="btn btn-outline btn-lg">
+            View All Doctors & Availability →
+          </Link>
+        </div>
       </section>
 
-      {/* ── BOOKING ───────────────────────────────────────── */}
-      <section id="book" className="section section-divider">
-        <div className="container-sm">
-          <span className="label-xs" style={{ display:"block", textAlign:"center", marginBottom:"14px" }}>Booking</span>
-          <h2 style={{ fontFamily:"var(--font-head)", fontSize:"clamp(28px,3.5vw,44px)", fontWeight:700, textAlign:"center", color:"var(--fg)", marginBottom:"10px" }}>
-            Reserve your visit
-          </h2>
-          <p style={{ textAlign:"center", fontFamily:"var(--font-body)", fontSize:"15px", color:"var(--fg-muted)", marginBottom:"44px" }}>
-            Our AI assistant will confirm your booking instantly
-          </p>
-
-          <div className="card" style={{ padding:"40px" }}>
-            <div className="grid-2" style={{ marginBottom:"20px" }}>
-              {FIELDS.map(([lbl,type,ph]) => (
-                <div className="form-field" key={lbl}>
-                  <label className="form-label">{lbl}</label>
-                  <input type={type} placeholder={ph} className="form-input" />
-                </div>
-              ))}
-            </div>
-
-            <div className="form-field" style={{ marginBottom:"24px" }}>
-              <label className="form-label">Notes / Symptoms</label>
-              <textarea placeholder="Describe any pain, sensitivity, or concerns..." rows={3}
-                className="form-input" style={{ resize:"vertical" }} />
-            </div>
-
-            <div className="summary-box" style={{ marginBottom:"28px" }}>
-              <p style={{ fontFamily:"var(--font-body)", fontSize:"11px", fontWeight:600, letterSpacing:".12em", textTransform:"uppercase", color:"var(--fg-dim)", marginBottom:"14px" }}>
-                Booking Summary
-              </p>
-              <div className="grid-3" style={{ gap:"16px" }}>
-                {([
-                  ["Service", activeService  !== null ? services[activeService].title                               : "—"],
-                  ["Doctor",  selectedDoctor !== null ? doctors[selectedDoctor].name.split(" ").slice(0,2).join(" ") : "—"],
-                  ["Time",    selectedSlot   ?? "—"],
-                ] as [string,string][]).map(([lbl,val]) => (
-                  <div key={lbl}>
-                    <p style={{ fontFamily:"var(--font-body)", fontSize:"11px", color:"var(--fg-dim)", marginBottom:"4px" }}>{lbl}</p>
-                    <p style={{
-                      fontFamily: "var(--font-head)", fontSize:"15px", fontWeight:600,
-                      color: val==="—" ? "var(--fg-dim)" : lbl==="Time" ? "var(--teal-600)" : "var(--fg)",
-                    }}>{val}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <button className="btn btn-primary btn-lg btn-full"
-              disabled={activeService===null||selectedDoctor===null||!selectedSlot}
-              onClick={handleBook}>
-              Confirm Appointment
-            </button>
-            <p style={{ textAlign:"center", fontFamily:"var(--font-body)", fontSize:"12px", color:"var(--fg-dim)", marginTop:"14px" }}>
-              Free cancellation up to 24 hours before your visit
+      {/* ── CTA BANNER ────────────────────────────────────── */}
+      <section className="section section-divider" style={{ padding:"60px var(--page-x)" }}>
+        <div style={{
+          display:"grid", gridTemplateColumns:"1fr auto", gap:"32px", alignItems:"center",
+          background:"linear-gradient(135deg, var(--teal-50), var(--bg-muted))",
+          border:"1px solid var(--border)", borderRadius:"var(--r-xl)",
+          padding:"40px 48px",
+        }}>
+          <div>
+            <h3 style={{ fontFamily:"var(--font-head)", fontSize:"22px", fontWeight:700, color:"var(--fg)", marginBottom:"10px" }}>
+              💬 Need help deciding?
+            </h3>
+            <p style={{ fontFamily:"var(--font-body)", fontSize:"15px", color:"var(--fg-muted)", maxWidth:"440px", lineHeight:1.65 }}>
+              Our AI dental assistant can answer questions, check availability, and book appointments — all through a simple conversation.
             </p>
           </div>
+          <Link href="/chat" className="btn btn-primary btn-lg" style={{ whiteSpace:"nowrap" }}>
+            Chat with AI Assistant
+          </Link>
         </div>
       </section>
 
@@ -389,10 +312,9 @@ export default function HomePage() {
             Combining modern AI scheduling with warm, personalised care.
             Every visit comfortable, effective, and stress-free.
           </p>
-          <button className="btn btn-lg" onClick={() => goto("book")}
-            style={{ background:"#fff", color:"var(--teal-700)", fontFamily:"var(--font-body)", fontWeight:600, padding:"14px 36px", borderRadius:"var(--r-lg)", border:"none" }}>
+          <Link href="/booking" className="btn btn-lg" style={{ background:"#fff", color:"var(--teal-700)", fontFamily:"var(--font-body)", fontWeight:600, padding:"14px 36px", borderRadius:"var(--r-lg)", border:"none" }}>
             Book Your First Visit
-          </button>
+          </Link>
         </div>
       </section>
 
@@ -414,7 +336,14 @@ export default function HomePage() {
             {FOOTER_COLS.map(([heading,items]) => (
               <div key={heading}>
                 <p className="footer-col-title">{heading}</p>
-                {items.map(item => <p key={item} className="footer-col-item">{item}</p>)}
+                {items.map(item => {
+                  // Quick Links → route links
+                  const routes: Record<string, string> = { Dashboard:"/dashboard", Booking:"/booking", Doctors:"/doctors", "AI Chat":"/chat" };
+                  if (routes[item]) {
+                    return <Link key={item} href={routes[item]} className="footer-col-item" style={{ display:"block" }}>{item}</Link>;
+                  }
+                  return <p key={item} className="footer-col-item">{item}</p>;
+                })}
               </div>
             ))}
           </div>
@@ -424,6 +353,18 @@ export default function HomePage() {
           <span className="footer-copy">Powered by AI · Built with care</span>
         </div>
       </footer>
+
+      {/* ── FLOATING CHAT BUTTON ──────────────────────────── */}
+      <Link
+        href="/chat"
+        className="floating-chat-btn"
+        aria-label="Open AI Chat"
+      >
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+        </svg>
+        {chatPulse && <span className="floating-chat-pulse" />}
+      </Link>
     </>
   );
 }
