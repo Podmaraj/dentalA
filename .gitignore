@@ -10,3 +10,7 @@ wheels/
 .venv
 #environmet v
 .env
+
+# Node
+node_modules/
+.next/
